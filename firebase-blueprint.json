@@ -1,0 +1,272 @@
+{
+  "entities": {
+    "tenant": {
+      "title": "Tenant",
+      "description": "Resident profile in Zora Stays",
+      "type": "object",
+      "properties": {
+        "tenantId": { "type": "string" },
+        "name": { "type": "string" },
+        "residingSince": { "type": "string", "description": "YYYY-MM-DD format" },
+        "roomNumber": { "type": "string" },
+        "sharingType": { "type": "string" },
+        "address": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "gender": { "type": "string" },
+        "mailId": { "type": "string" },
+        "password": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "statusBadge": { "type": "string", "enum": ["hostel", "leave", "late"] },
+        "rentAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "overdue"] },
+        "dueDate": { "type": "string" },
+        "bedNumber": { "type": "string" },
+        "assignedBed": { "type": "string" },
+        "onboarded": { "type": "boolean" },
+        "emergencyContact": { "type": "string" },
+        "securityDepositAmount": { "type": "number" },
+        "securityDepositStatus": { "type": "string", "enum": ["paid", "pending", "refunded"] },
+        "idProofType": { "type": "string" },
+        "idProofStatus": { "type": "string", "enum": ["verified", "pending", "rejected"] }
+      },
+      "required": ["tenantId", "name", "residingSince", "roomNumber", "sharingType", "address", "phoneNumber", "gender", "mailId", "createdAt", "statusBadge", "rentAmount", "paymentStatus", "dueDate"]
+    },
+    "ticket": {
+      "title": "Ticket",
+      "description": "Tenant complaint or issue ticket",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "category": { "type": "string", "enum": ["food", "housekeeping", "laundry", "maintenance", "sales", "other"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "resolved"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "followupCount": { "type": "number" },
+        "comments": {
+          "type": "array",
+          "description": "List of comment messages"
+        }
+      },
+      "required": ["id", "tenantId", "tenantName", "roomNumber", "category", "title", "description", "status", "priority", "createdAt", "updatedAt", "followupCount", "comments"]
+    },
+    "notification": {
+      "title": "Notification",
+      "description": "System event or ticket alert",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recipientRole": { "type": "string", "enum": ["tenant", "manager"] },
+        "recipientId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "ticketId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "recipientRole", "title", "message", "createdAt", "read"]
+    },
+    "gatepass": {
+      "title": "GatePass",
+      "description": "Resident check-out or late-entry gatepass",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "type": { "type": "string", "enum": ["leave", "late-entry", "visitor"] },
+        "departureDate": { "type": "string" },
+        "returnDate": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" },
+        "visitorName": { "type": "string" },
+        "visitorRelation": { "type": "string" },
+        "visitDate": { "type": "string" },
+        "visitTime": { "type": "string" }
+      },
+      "required": ["id", "tenantId", "tenantName", "roomNumber", "type", "departureDate", "returnDate", "reason", "status", "createdAt"]
+    },
+    "notice": {
+      "title": "Notice",
+      "description": "Management system notice or announcement board",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "urgency": { "type": "string", "enum": ["info", "important", "critical"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "urgency", "createdAt"]
+    },
+    "meal_feedback": {
+      "title": "MealFeedback",
+      "description": "Day-by-day food committee votes and survey metrics",
+      "type": "object",
+      "properties": {
+        "day": { "type": "string" },
+        "breakfastVotes": {
+          "type": "object",
+          "properties": {
+            "up": { "type": "number" },
+            "down": { "type": "number" }
+          }
+        },
+        "lunchVotes": {
+          "type": "object",
+          "properties": {
+            "up": { "type": "number" },
+            "down": { "type": "number" }
+          }
+        },
+        "dinnerVotes": {
+          "type": "object",
+          "properties": {
+            "up": { "type": "number" },
+            "down": { "type": "number" }
+          }
+        },
+        "breakfastMenu": { "type": "string" },
+        "breakfastSub": { "type": "string" },
+        "lunchMenu": { "type": "string" },
+        "lunchSub": { "type": "string" },
+        "dinnerMenu": { "type": "string" },
+        "dinnerSub": { "type": "string" }
+      },
+      "required": ["day", "breakfastVotes", "lunchVotes", "dinnerVotes"]
+    },
+    "lostfound": {
+      "title": "LostFoundItem",
+      "description": "Item logged in the PG lost and found system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["lost", "found"] },
+        "location": { "type": "string" },
+        "dateStr": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "resolved"] },
+        "tenantId": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "type", "location", "dateStr", "status", "tenantId", "tenantName", "roomNumber", "photoUrl", "createdAt"]
+    },
+    "room": {
+      "title": "Room",
+      "description": "A living space inside Zora Stays with dedicated billing, capacity, and vacancy stats",
+      "type": "object",
+      "properties": {
+        "roomNumber": { "type": "string" },
+        "roomType": { "type": "string", "enum": ["Single", "Double", "Triple"] },
+        "monthlyRent": { "type": "string" },
+        "totalCapacity": { "type": "number" },
+        "vacantSpots": { "type": "number" }
+      },
+      "required": ["roomNumber", "roomType", "monthlyRent", "totalCapacity", "vacantSpots"]
+    },
+    "rent_payment": {
+      "title": "RentPayment",
+      "description": "Monthly rent payment receipt for a tenant",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "tenantName": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "amount": { "type": "number" },
+        "paidAt": { "type": "string" },
+        "month": { "type": "string" },
+        "status": { "type": "string", "enum": ["paid", "pending"] }
+      },
+      "required": ["id", "tenantId", "tenantName", "roomNumber", "amount", "month", "status"]
+    },
+    "salary": {
+      "title": "Salary",
+      "description": "Employee salary payments tracked by manager",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "role": { "type": "string" },
+        "amountPaid": { "type": "number" },
+        "month": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "employeeName", "role", "amountPaid", "month", "status", "createdAt"]
+    },
+    "session": {
+      "title": "Session",
+      "description": "Active user sessions for Zora Stays security tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string", "enum": ["tenant", "manager", "employee"] },
+        "name": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "lastActive": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "revoked"] }
+      },
+      "required": ["id", "userId", "role", "name", "userAgent", "lastActive", "status"]
+    }
+  },
+  "firestore": {
+    "/sessions/{id}": {
+      "schema": "session",
+      "description": "Active device sessions for security audits and remote revocation"
+    },
+    "/tenants/{tenantId}": {
+      "schema": "tenant",
+      "description": "Paying guest directory"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "ticket",
+      "description": "Tenant issue tickets and comment threads"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notification",
+      "description": "Real-time user or manager notifications"
+    },
+    "/gatepasses/{gatepassId}": {
+      "schema": "gatepass",
+      "description": "Tenant out-station leave or late entry slips"
+    },
+    "/notices/{noticeId}": {
+      "schema": "notice",
+      "description": "Announcements made by PG warden"
+    },
+    "/meals/{day}": {
+      "schema": "meal_feedback",
+      "description": "Daily food menu satisfaction audits"
+    },
+    "/lostfound/{itemId}": {
+      "schema": "lostfound",
+      "description": "Lost and found items board"
+    },
+    "/rooms/{roomNumber}": {
+      "schema": "room",
+      "description": "List of rooms and active seat vacancy attributes"
+    },
+    "/rent_payments/{id}": {
+      "schema": "rent_payment",
+      "description": "Monthly rent payments list"
+    },
+    "/salaries/{id}": {
+      "schema": "salary",
+      "description": "Staff salaries paid by management"
+    }
+  }
+}

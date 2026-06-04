@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="150 100 200 200" width="100%" height="100%">
+  <!-- Definitions for gradients and shadows -->
+  <defs>
+    <!-- Ribbon top and bottom main color gradient -->
+    <linearGradient id="ribbonGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F15A24" />
+      <stop offset="100%" stop-color="#FF7F4D" />
+    </linearGradient>
+    
+    <!-- Ribbon back/shadow fold gradient -->
+    <linearGradient id="foldGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C83B0E" />
+      <stop offset="100%" stop-color="#F15A24" />
+    </linearGradient>
+
+    <!-- Subtle drop shadow for the Z ribbon -->
+    <filter id="subtleShadowIcon" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#4E2817" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Arch outline -->
+  <path d="M165,280 L165,160 A85,85 0 0,1 335,160 L335,280 Z" stroke="#4E2817" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- Z ribbon layout -->
+  <g filter="url(#subtleShadowIcon)">
+    <!-- Top Horizontal Ribbon block -->
+    <path d="M195,120 L278,120 L305,147 L195,147 Z" fill="url(#ribbonGradIcon)" />
+    
+    <!-- Top folded shadow/depth segment -->
+    <path d="M278,120 L305,147 L278,147 Z" fill="#C83B0E" opacity="0.8" />
+    
+    <!-- Main Diagonal Ribbon slice -->
+    <path d="M305,147 L195,253 L225,253 L305,175 Z" fill="url(#foldGradIcon)" />
+    
+    <!-- Bottom folded fold / transition connector segment -->
+    <path d="M195,226 L222,253 L195,253 Z" fill="#A02D09" />
+    
+    <!-- Bottom Horizontal Ribbon block -->
+    <path d="M195,226 L305,226 L305,253 L222,253 Z" fill="url(#ribbonGradIcon)" />
+  </g>
+</svg>
