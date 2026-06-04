@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Montserrat:wght@800;900&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-brand-orange: #F15A24;
+  --color-brand-brown: #4E2817;
+  --color-brand-cream: #FAF6F0;
+  --color-brand-cream-light: #FCFAF7;
+}
+
+/* Base style resets and customizations for premium Zora Stays theme */
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF6F0;
+  color: #4E2817;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars matching the brown brand color */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #E5DCD3;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C4B5A5;
+}
+
+/* Glow effects and accents adjusted for light theme */
+.neon-glow-emerald {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+.neon-glow-orange {
+  box-shadow: 0 0 15px rgba(241, 90, 36, 0.15);
+}
+.neon-glow-blue {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+.neon-glow-amber {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+}
+
+.text-glow-emerald {
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+.text-glow-orange {
+  text-shadow: 0 0 8px rgba(241, 90, 36, 0.4);
+}
+.text-glow-blue {
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+.text-glow-amber {
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+}
+
+@keyframes profile-border-glow {
+  0% {
+    border-color: #2563eb; /* deep blue */
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.45), inset 0 0 6px rgba(37, 99, 235, 0.25);
+  }
+  50% {
+    border-color: #f97316; /* orange */
+    box-shadow: 0 0 22px rgba(249, 115, 22, 0.65), inset 0 0 11px rgba(249, 115, 22, 0.35);
+  }
+  100% {
+    border-color: #2563eb; /* deep blue */
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.45), inset 0 0 6px rgba(37, 99, 235, 0.25);
+  }
+}
+
+.profile-card-glow {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card-glow:hover, .profile-card-glow:focus-within {
+  animation: profile-border-glow 2.5s infinite ease-in-out;
+}
+

@@ -1,0 +1,8 @@
+{
+  "name": "Remix: ZORAConnect: Smart Living Portal",
+  "description": "A premium dark-themed PG management portal with real-time ticket tracking, WhatsApp integration, and streamlined tenant-manager communication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

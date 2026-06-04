@@ -1,0 +1,296 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // 1. GLOBAL SAFETY NET & DEFAULT DENY
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // 2. HARDENED GLOBAL ABAC HELPERS
+    // ==========================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isManagerOrAdmin() {
+      return isSignedIn() && (
+        (request.auth.token != null && (
+          request.auth.token.email == "nationamit@gmail.com" || 
+          request.auth.token.email == "admin@zora.com" || 
+          request.auth.token.email == "director@zora.com" || 
+          request.auth.token.email == "manager@zora.com" || 
+          request.auth.token.email == "admin_staff@zora.com" || 
+          request.auth.token.email == "staff@zora.com"
+        )) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // ==========================================
+    // 3. SCHEMA VALIDATION HELPER FUNCTIONS
+    // ==========================================
+    
+    function isValidSession(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.role is string && (data.role == "tenant" || data.role == "manager" || data.role == "employee")
+        && data.name is string && data.name.size() <= 100
+        && data.userAgent is string && data.userAgent.size() <= 512
+        && data.lastActive is string && data.lastActive.size() <= 64
+        && data.status is string && (data.status == "active" || data.status == "revoked");
+    }
+
+    function isValidTenant(data) {
+      return data.tenantId is string && data.tenantId.size() <= 128
+        && data.name is string && data.name.size() <= 100
+        && data.residingSince is string && data.residingSince.size() <= 32
+        && data.roomNumber is string && data.roomNumber.size() <= 32
+        && data.sharingType is string && data.sharingType.size() <= 32
+        && data.address is string && data.address.size() <= 500
+        && data.phoneNumber is string && data.phoneNumber.size() <= 30
+        && data.gender is string && data.gender.size() <= 30
+        && data.mailId is string && data.mailId.size() <= 100
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.statusBadge is string && (data.statusBadge == "hostel" || data.statusBadge == "leave" || data.statusBadge == "late")
+        && (data.rentAmount is int || data.rentAmount is float)
+        && data.paymentStatus is string && (data.paymentStatus == "paid" || data.paymentStatus == "pending" || data.paymentStatus == "overdue")
+        && data.dueDate is string && data.dueDate.size() <= 64
+        && !('role' in data) && !('isAdmin' in data);
+    }
+
+    function isValidTicket(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.tenantId is string && data.tenantId.size() <= 128
+        && data.tenantName is string && data.tenantName.size() <= 100
+        && data.roomNumber is string && data.roomNumber.size() <= 32
+        && data.category is string && (data.category == "food" || data.category == "housekeeping" || data.category == "laundry" || data.category == "maintenance" || data.category == "sales" || data.category == "other")
+        && data.title is string && data.title.size() <= 200
+        && data.description is string && data.description.size() <= 1000
+        && data.status is string && (data.status == "pending" || data.status == "in-progress" || data.status == "resolved")
+        && data.priority is string && (data.priority == "low" || data.priority == "medium" || data.priority == "high" || data.priority == "urgent")
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.updatedAt is string && data.updatedAt.size() <= 64
+        && data.followupCount is int
+        && data.comments is list && data.comments.size() <= 100;
+    }
+
+    function isValidNotification(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.recipientRole is string && (data.recipientRole == "tenant" || data.recipientRole == "manager")
+        && data.title is string && data.title.size() <= 200
+        && data.message is string && data.message.size() <= 1000
+        && data.createdAt is string && data.createdAt.size() <= 64
+        && data.read is bool;
+    }
+
+    function isValidGatePass(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.tenantId is string && data.tenantId.size() <= 128
+        && data.tenantName is string && data.tenantName.size() <= 100
+        && data.roomNumber is string && data.roomNumber.size() <= 32
+        && data.type is string && (data.type == "leave" || data.type == "late-entry" || data.type == "visitor")
+        && data.departureDate is string && data.departureDate.size() <= 32
+        && data.returnDate is string && data.returnDate.size() <= 32
+        && data.reason is string && data.reason.size() <= 500
+        && data.status is string && (data.status == "pending" || data.status == "approved" || data.status == "rejected")
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidNotice(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.content is string && data.content.size() <= 5000
+        && data.urgency is string && (data.urgency == "info" || data.urgency == "important" || data.urgency == "critical")
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidMealFeedback(data) {
+      return data.day is string && data.day.size() <= 32
+        && data.breakfastVotes is map
+        && data.breakfastVotes.up is int && data.breakfastVotes.up >= 0 && data.breakfastVotes.up <= 100000
+        && data.breakfastVotes.down is int && data.breakfastVotes.down >= 0 && data.breakfastVotes.down <= 100000
+        && data.lunchVotes is map
+        && data.lunchVotes.up is int && data.lunchVotes.up >= 0 && data.lunchVotes.up <= 100000
+        && data.lunchVotes.down is int && data.lunchVotes.down >= 0 && data.lunchVotes.down <= 100000
+        && data.dinnerVotes is map
+        && data.dinnerVotes.up is int && data.dinnerVotes.up >= 0 && data.dinnerVotes.up <= 100000
+        && data.dinnerVotes.down is int && data.dinnerVotes.down >= 0 && data.dinnerVotes.down <= 100000;
+    }
+
+    function isValidLostFoundItem(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 200
+        && data.description is string && data.description.size() <= 1000
+        && data.type is string && (data.type == "lost" || data.type == "found")
+        && data.location is string && data.location.size() <= 200
+        && data.dateStr is string && data.dateStr.size() <= 32
+        && data.status is string && (data.status == "active" || data.status == "resolved")
+        && data.tenantId is string && data.tenantId.size() <= 128
+        && data.tenantName is string && data.tenantName.size() <= 100
+        && data.roomNumber is string && data.roomNumber.size() <= 32
+        && data.photoUrl is string && data.photoUrl.size() <= 500
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+    function isValidRoom(data) {
+      return data.roomNumber is string && data.roomNumber.size() <= 32
+        && data.roomType is string && (data.roomType == "Single" || data.roomType == "Double" || data.roomType == "Triple")
+        && data.monthlyRent is string && data.monthlyRent.size() <= 64
+        && data.totalCapacity is int && data.totalCapacity >= 0 && data.totalCapacity <= 10
+        && data.vacantSpots is int && data.vacantSpots >= 0 && data.vacantSpots <= 10;
+    }
+
+    function isValidRentPayment(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.tenantId is string && data.tenantId.size() <= 128
+        && data.tenantName is string && data.tenantName.size() <= 100
+        && data.roomNumber is string && data.roomNumber.size() <= 32
+        && (data.amount is int || data.amount is float) && data.amount >= 0 && data.amount <= 1000000
+        && data.month is string && data.month.size() <= 64
+        && data.status is string && (data.status == "paid" || data.status == "pending");
+    }
+
+    function isValidSalary(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.employeeName is string && data.employeeName.size() <= 100
+        && data.role is string && data.role.size() <= 100
+        && (data.amountPaid is int || data.amountPaid is float) && data.amountPaid >= 0 && data.amountPaid <= 1000000
+        && data.month is string && data.month.size() <= 64
+        && data.status is string && data.status.size() <= 32
+        && data.createdAt is string && data.createdAt.size() <= 64;
+    }
+
+
+    // ==========================================
+    // 4. RESOURCE MATCH RULESETS
+    // ==========================================
+
+    // --- SESSIONS ---
+    match /sessions/{id} {
+      allow read: if isManagerOrAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(id) && isValidSession(incoming()) && incoming().userId == request.auth.uid;
+      allow update: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid && isValidSession(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['lastActive', 'status'])
+      );
+      allow delete: if isManagerOrAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // --- TENANTS ---
+    match /tenants/{tenantId} {
+      allow read: if isManagerOrAdmin() || isOwner(tenantId);
+      allow create: if isManagerOrAdmin() || (isOwner(tenantId) && isValidTenant(incoming()));
+      allow update: if isManagerOrAdmin() || (
+        isOwner(tenantId) && isValidTenant(incoming()) && incoming().tenantId == existing().tenantId
+      );
+      allow delete: if isManagerOrAdmin();
+    }
+
+    // --- TICKETS ---
+    match /tickets/{ticketId} {
+      allow read: if isManagerOrAdmin() || (isSignedIn() && resource.data.tenantId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(ticketId) && isValidTicket(incoming()) && (
+        isManagerOrAdmin() || (isOwner(incoming().tenantId) && incoming().status == "pending")
+      );
+      allow update: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.tenantId == request.auth.uid && isValidTicket(incoming()) &&
+        incoming().tenantId == existing().tenantId &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['comments', 'updatedAt', 'title', 'description'])
+      );
+      allow delete: if isManagerOrAdmin() || (isSignedIn() && resource.data.tenantId == request.auth.uid);
+    }
+
+    // --- NOTIFICATIONS ---
+    match /notifications/{notificationId} {
+      allow read: if isManagerOrAdmin() || (isSignedIn() && resource.data.recipientId == request.auth.uid);
+      allow create: if isManagerOrAdmin() || isSignedIn();
+      allow update: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.recipientId == request.auth.uid && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['read'])
+      );
+      allow delete: if isManagerOrAdmin() || (isSignedIn() && resource.data.recipientId == request.auth.uid);
+    }
+
+    // --- GATEPASSES ---
+    match /gatepasses/{gatepassId} {
+      allow read: if isManagerOrAdmin() || (isSignedIn() && resource.data.tenantId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(gatepassId) && isValidGatePass(incoming()) && (
+        isManagerOrAdmin() || (isOwner(incoming().tenantId) && incoming().status == "pending")
+      );
+      allow update: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.tenantId == request.auth.uid && isValidGatePass(incoming()) &&
+        incoming().status == "pending" &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'departureDate', 'returnDate', 'reason', 'visitorName', 'visitorRelation', 'visitDate', 'visitTime'
+        ])
+      );
+      allow delete: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.tenantId == request.auth.uid && resource.data.status == "pending"
+      );
+    }
+
+    // --- NOTICES ---
+    match /notices/{noticeId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isManagerOrAdmin() && (request.method == 'delete' || isValidNotice(incoming()));
+    }
+
+    // --- MEALS ---
+    match /meals/{day} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidMealFeedback(incoming());
+      allow delete: if isManagerOrAdmin();
+    }
+
+    // --- LOSTFOUND ---
+    match /lostfound/{itemId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(itemId) && isValidLostFoundItem(incoming()) && (
+        isManagerOrAdmin() || isOwner(incoming().tenantId)
+      );
+      allow update: if isManagerOrAdmin() || (
+        isSignedIn() && resource.data.tenantId == request.auth.uid && isValidLostFoundItem(incoming()) &&
+        incoming().tenantId == existing().tenantId
+      );
+      allow delete: if isManagerOrAdmin() || (isSignedIn() && resource.data.tenantId == request.auth.uid);
+    }
+
+    // --- ROOMS ---
+    match /rooms/{roomNumber} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isManagerOrAdmin() && (request.method == 'delete' || isValidRoom(incoming()));
+    }
+
+    // --- RENT PAYMENTS ---
+    match /rent_payments/{id} {
+      allow read: if isManagerOrAdmin() || (isSignedIn() && resource.data.tenantId == request.auth.uid);
+      allow create, update, delete: if isManagerOrAdmin() && (request.method == 'delete' || isValidRentPayment(incoming()));
+    }
+
+    // --- SALARIES ---
+    match /salaries/{id} {
+      allow read: if isManagerOrAdmin();
+      allow create, update, delete: if isManagerOrAdmin() && (request.method == 'delete' || isValidSalary(incoming()));
+    }
+  }
+}
